@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>IdentoGo Appointment Form</title>
+	<style>
+		body { font-family: Arial, sans-serif; background:#f5f7fb; color:#102028; margin:0; padding:24px; }
+		.top-bar { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px; }
+		.top-logos { text-align:center; flex:1; margin-bottom:0; }
+		.top-logos img { display:block; margin:0 auto; height:auto; max-width:100%; }
+		.assisted-button { background:#2563eb; color:#fff; border:none; border-radius:10px; padding:12px 14px; font-size:1rem; font-weight:700; cursor:pointer; min-height:48px; box-shadow:0 6px 16px rgba(37,99,235,0.18); }
+		.assisted-button:hover { background:#1d4ed8; }
+		#dtcLogo { width:clamp(220px, 72vw, 420px); max-width:100%; }
+		.brand-text { font-weight:700; margin:12px 0; font-size:1.05rem; }
+		.identogo-logo { width:clamp(84px, 30vw, 150px); max-width:100%; margin-top:8px; display:block; }
+		.container { width:calc(100% - 48px); max-width:520px; margin:18px auto; background:#fff; border-radius:10px; padding:20px; box-shadow:0 6px 18px rgba(8,24,48,0.08); box-sizing:border-box; border:3px solid #2563eb; position:relative; }
+		/* ── Language bar ── */
+		.lang-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+		.lang-label { font-weight:700; font-size:0.95rem; color:#102028; white-space:nowrap; }
+		.lang-opt-btn { padding:7px 14px; border-radius:8px; border:1px solid #cbd5e1; background:#f8fafc; cursor:pointer; white-space:nowrap; min-height:38px; font-weight:600; font-size:0.9rem; font-family:inherit; color:#0f172a; }
+		.lang-opt-btn:hover { background:#e8f1ff; border-color:#2563eb; }
+		.lang-opt-btn.active { background:#2563eb; color:#fff; border-color:#2563eb; }
+		.lang-opt-select { width:auto; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.9rem; font-weight:600; cursor:pointer; font-family:inherit; background:#f8fafc; color:#0f172a; min-height:auto; margin-top:0; }
+		.lang-opt-select.active { background:#2563eb; color:#fff; border-color:#2563eb; }
+		form { margin-top:14px; }
+		label { display:block; margin-top:12px; font-weight:600; }
+		input, select { width:100%; padding:10px 12px; margin-top:8px; border-radius:8px; border:1px solid #cbd5e1; background:#fbfdff; box-sizing:border-box; min-height:48px; }
+		input:focus, select:focus, button:focus { outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); border-color: rgba(37,99,235,0.9); }
+		.hint { color:#475867; font-size:0.95rem; margin-top:6px; }
+		/* ── DOB three-part field ── */
+		.dob-row { display:flex; align-items:flex-start; gap:8px; margin-top:8px; }
+		.dob-part { display:flex; flex-direction:column; gap:3px; align-items:center; }
+		.dob-part-label { font-size:0.78rem; font-weight:600; color:#475867; }
+		.dob-row input { width:60px; padding:10px 4px; margin-top:0; text-align:center; font-size:1rem; }
+		.dob-row input.dob-year { width:80px; }
+		.dob-sep { color:#475867; font-size:1.2rem; font-weight:700; padding-top:12px; }
+		html.device-mobile .dob-row input { padding:12px 4px; }
+		html.device-mobile .dob-sep { padding-top:14px; }
+		html.device-ipad9 .dob-row input { padding:14px 4px; }
+		html.device-ipad9 .dob-sep { padding-top:16px; }
+		html.device-tablet .dob-row input { padding:13px 4px; }
+		html.device-tablet .dob-sep { padding-top:15px; }
+		.button-row { display:flex; gap:12px; margin-top:18px; }
+		.button-row button { flex:1; padding:10px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:600; min-height:48px; }
+		.clear-button { background:#e6eefc; color:#0f172a; border:1px solid #cbd5e1; }
+		.submit-button { background:#2563eb; color:#fff; }
+		.success-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.45); display:none; align-items:center; justify-content:center; padding:18px; z-index:1000; }
+		.success-overlay.show { display:flex; }
+		.success-modal { width:min(92vw, 420px); background:#fff; border:3px solid #2563eb; border-radius:16px; box-shadow:0 18px 40px rgba(15,23,42,0.18); padding:18px 18px 14px; text-align:center; }
+		.success-modal h2 { margin:0 0 10px; font-size:1.25rem; color:#102028; }
+		.success-modal p { margin:0 0 14px; font-size:1.02rem; line-height:1.35; color:#1f2937; }
+		.success-modal button { background:#2563eb; color:#fff; border:none; border-radius:10px; padding:10px 14px; font-size:1rem; font-weight:700; cursor:pointer; min-height:44px; }
+
+		/* ── Mobile phones ── */
+		html.device-mobile body { padding:12px; }
+		html.device-mobile .top-bar { flex-direction:column; align-items:center; gap:8px; margin-bottom:12px; }
+		html.device-mobile .assisted-button { width:100%; text-align:center; }
+		html.device-mobile #dtcLogo { width:clamp(180px, 80vw, 320px); }
+		html.device-mobile .identogo-logo { width:clamp(64px, 22vw, 100px); }
+		html.device-mobile .container { width:calc(100% - 20px); padding:12px; }
+		html.device-mobile .lang-opt-btn { min-height:48px; font-size:1rem; }
+		html.device-mobile .lang-opt-select { min-height:auto; font-size:1rem; }
+		html.device-mobile .identogo-logo { display:block; }
+		html.device-mobile label { font-size:1.05rem; }
+		html.device-mobile input, html.device-mobile select { min-height:52px; font-size:1.05rem; padding:12px 14px; }
+		/* Stack Clear + Submit vertically so they have full width */
+		html.device-mobile .button-row { flex-direction:column; gap:8px; }
+		html.device-mobile .button-row button { flex:none; width:100%; min-height:52px; font-size:1.05rem; }
+		html.device-mobile .hint { font-size:0.98rem; }
+
+		/* ── iPad 9th Generation (10.2 in · 810×1080 · 2× DPR) ── */
+		html.device-ipad9 body { padding:36px; }
+		html.device-ipad9 #dtcLogo { width:clamp(280px, 54vw, 440px); }
+		html.device-ipad9 .brand-text { font-size:1.18rem; margin:14px 0; }
+		html.device-ipad9 .identogo-logo { width:clamp(92px, 20vw, 128px); margin-top:10px; }
+		html.device-ipad9 .container { max-width:700px; padding:30px; border-radius:12px; }
+		html.device-ipad9 label { font-size:1.12rem; margin-top:14px; }
+		html.device-ipad9 input, html.device-ipad9 select { min-height:56px; font-size:1.1rem; padding:14px 16px; border-radius:10px; }
+		html.device-ipad9 .lang-opt-select { min-height:auto; }
+		html.device-ipad9 .lang-opt-btn { min-height:50px; font-size:1.05rem; }
+		html.device-ipad9 .identogo-logo { display:block; }
+		html.device-ipad9 .button-row { gap:14px; }
+		html.device-ipad9 .button-row button { min-height:56px; font-size:1.1rem; border-radius:10px; }
+		html.device-ipad9 .hint { font-size:1rem; }
+
+		/* ── General tablet (other iPads · Android tablets) ── */
+		html.device-tablet body { padding:28px; }
+		html.device-tablet #dtcLogo { width:clamp(260px, 56vw, 420px); }
+		html.device-tablet .brand-text { font-size:1.12rem; }
+		html.device-tablet .container { max-width:660px; padding:26px; border-radius:12px; }
+		html.device-tablet label { font-size:1.08rem; }
+		html.device-tablet input, html.device-tablet select { min-height:54px; font-size:1.08rem; padding:13px 15px; border-radius:10px; }
+		html.device-tablet .lang-opt-select { min-height:auto; }
+		html.device-tablet .lang-opt-btn { min-height:48px; }
+		html.device-tablet .button-row { gap:12px; }
+		html.device-tablet .button-row button { min-height:54px; font-size:1.08rem; border-radius:10px; }
+		html.device-tablet .identogo-logo { display:block; width:clamp(80px, 16vw, 120px); margin-top:10px; }
+
+		/* ── Desktop ── */
+		html.device-desktop .top-bar { display:block; text-align:center; position:relative; margin-bottom:18px; }
+		html.device-desktop .top-logos { display:inline-block; text-align:center; }
+		html.device-desktop .assisted-button { position:absolute; right:0; top:0; }
+		html.device-desktop .container { max-width:520px; }
+		html.device-desktop .lang-opt-select { min-height:auto; }
+
+		/* orientation fallback for iPad 9 landscape */
+		@media (min-width: 1024px) and (max-width: 1080px) {
+			html.device-ipad9 .container { max-width:860px; }
+			html.device-ipad9 #dtcLogo { max-width:560px; }
+		}
+	</style>
+</head>
+<body>
+<script>
+(function(){
+	var ua = navigator.userAgent;
+	var w = screen.width, h = screen.height;
+	var dpr = window.devicePixelRatio || 1;
+	var touch = navigator.maxTouchPoints || 0;
+	var isIPad   = /iPad/.test(ua) || (/Macintosh/.test(ua) && touch > 1);
+	var isPhone  = !isIPad && /Android|iPhone|iPod/.test(ua) && !(touch > 1 && Math.min(w,h) >= 600);
+	var isTablet = !isIPad && !isPhone && touch > 1 && Math.min(w,h) >= 600;
+	var lo = Math.min(w,h), hi = Math.max(w,h);
+	var isIPad9  = isIPad && lo === 810 && hi === 1080 && dpr === 2;
+	var cls = isIPad9  ? 'device-ipad9'
+	        : isIPad   ? 'device-tablet'
+	        : isPhone  ? 'device-mobile'
+	        : isTablet ? 'device-tablet'
+	        :             'device-desktop';
+	document.documentElement.classList.add(cls);
+})();
+</script>
+
+	<div class="top-bar">
+		<button type="button" class="assisted-button">Assisted Sign in</button>
+		<div class="top-logos">
+			<img id="dtcLogo" src="DTC Logo_with tag.png" srcset="DTC Logo_with tag@2x.png 2x" sizes="(max-width:600px) 80vw, 360px" alt="DTC Logo" />
+			<div class="brand-text">Drug Test Compliance Clinic Daily Sing-in</div>
+			<img src="identogo_logo.png" srcset="identogo_logo@2x.png 2x" sizes="(max-width:600px) 30vw, 100px" alt="IdentoGo Logo" class="identogo-logo" onerror="this.srcset='';this.onerror=null;" />
+		</div>
+	</div>
+
+	<div id="successOverlay" class="success-overlay" aria-hidden="true">
+		<div class="success-modal" role="dialog" aria-modal="true" aria-live="assertive">
+			<h2 id="successTitle">Thanks!</h2>
+			<p id="successMessage">Thanks! Please grab a seat in the waiting room. Someone will be with you shortly.</p>
+			<button type="button" id="successCloseBtn">Close</button>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="lang-bar">
+			<span class="lang-label">Language</span>
+			<button type="button" id="englishBtn" class="lang-opt-btn active">English</button>
+			<button type="button" id="spanishBtn" class="lang-opt-btn">Español</button>
+			<select id="otherLangSelect" class="lang-opt-select">
+				<option value="">Other</option>
+				<option value="zh-TW">中文 (繁體)</option>
+				<option value="zh-CN">中文 (简体)</option>
+				<option value="ru">Русский</option>
+				<option value="bn">বাংলা</option>
+				<option value="ht">Kreyòl Ayisyen</option>
+				<option value="ko">한국어</option>
+				<option value="ar">العربية</option>
+				<option value="ur">اردو</option>
+				<option value="fr">Français</option>
+				<option value="pl">Polski</option>
+			</select>
+		</div>
+
+		<form id="appointmentForm">
+			<label for="reasonForVisit">Reason for today's visit</label>
+			<select id="reasonForVisit" name="reasonForVisit" required>
+				<option value="">Select reason</option>
+			</select>
+
+			<label for="firstAndLastName">First and Last Name</label>
+			<input type="text" id="firstAndLastName" name="firstAndLastName" autocomplete="name" required />
+
+			<label for="company">Company</label>
+			<input type="text" id="company" name="company" />
+
+			<label for="idState">ID Issuing State</label>
+			<select id="idState" name="idState" required>
+				<option value="">Select state</option>
+				<option value="AL">Alabama</option>
+				<option value="AK">Alaska</option>
+				<option value="AZ">Arizona</option>
+				<option value="AR">Arkansas</option>
+				<option value="CA">California</option>
+				<option value="CO">Colorado</option>
+				<option value="CT">Connecticut</option>
+				<option value="DE">Delaware</option>
+				<option value="FL">Florida</option>
+				<option value="GA">Georgia</option>
+				<option value="HI">Hawaii</option>
+				<option value="ID">Idaho</option>
+				<option value="IL">Illinois</option>
+				<option value="IN">Indiana</option>
+				<option value="IA">Iowa</option>
+				<option value="KS">Kansas</option>
+				<option value="KY">Kentucky</option>
+				<option value="LA">Louisiana</option>
+				<option value="ME">Maine</option>
+				<option value="MD">Maryland</option>
+				<option value="MA">Massachusetts</option>
+				<option value="MI">Michigan</option>
+				<option value="MN">Minnesota</option>
+				<option value="MS">Mississippi</option>
+				<option value="MO">Missouri</option>
+				<option value="MT">Montana</option>
+				<option value="NE">Nebraska</option>
+				<option value="NV">Nevada</option>
+				<option value="NH">New Hampshire</option>
+				<option value="NJ">New Jersey</option>
+				<option value="NM">New Mexico</option>
+				<option value="NY">New York</option>
+				<option value="NC">North Carolina</option>
+				<option value="ND">North Dakota</option>
+				<option value="OH">Ohio</option>
+				<option value="OK">Oklahoma</option>
+				<option value="OR">Oregon</option>
+				<option value="PA">Pennsylvania</option>
+				<option value="RI">Rhode Island</option>
+				<option value="SC">South Carolina</option>
+				<option value="SD">South Dakota</option>
+				<option value="TN">Tennessee</option>
+				<option value="TX">Texas</option>
+				<option value="UT">Utah</option>
+				<option value="VT">Vermont</option>
+				<option value="VA">Virginia</option>
+				<option value="WA">Washington</option>
+				<option value="WV">West Virginia</option>
+				<option value="WI">Wisconsin</option>
+				<option value="WY">Wyoming</option>
+			</select>
+
+			<label for="idNumber">Driver's License / ID Number</label>
+			<input type="text" id="idNumber" name="idNumber" required />
+
+			<label for="dobDay">Your Date of Birth</label>
+			<div class="dob-row">
+				<div class="dob-part">
+					<input type="text" id="dobDay" name="dobDay" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="bday-day" required />
+					<span class="dob-part-label" id="dobDayLabel">Day</span>
+				</div>
+				<span class="dob-sep">/</span>
+				<div class="dob-part">
+					<input type="text" id="dobMonth" name="dobMonth" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="bday-month" required />
+					<span class="dob-part-label" id="dobMonthLabel">Month</span>
+				</div>
+				<span class="dob-sep">/</span>
+				<div class="dob-part">
+					<input type="text" id="dobYear" name="dobYear" class="dob-year" maxlength="4" minlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="bday-year" required />
+					<span class="dob-part-label" id="dobYearLabel">Year</span>
+				</div>
+			</div>
+
+			<label for="phone">Your Phone Number</label>
+			<input type="tel" id="phone" name="phone" inputmode="tel" autocomplete="tel" required />
+
+			<label for="email">Your Email Address</label>
+			<input type="email" id="email" name="email" autocomplete="email" required />
+
+			<div class="button-row">
+				<button type="button" class="clear-button" id="clearBtn">Clear</button>
+				<button type="submit" class="submit-button" id="submitBtn">Submit</button>
+			</div>
+		</form>
+	</div>
+
+	<script>
+		const LOCALES_DIR = 'locales/';
+		const translationCache = {};
+		function populateReasonOptions(t = translationCache[currentLang] || {}) {
+			const select = document.getElementById('reasonForVisit');
+			if (!select) return;
+			select.innerHTML = [
+				['', t.reasonSelect || 'Select reason'],
+				['Drug Test', t.reasonDrugTest || 'Drug Test'],
+				['Alcohol Test', t.reasonAlcoholTest || 'Alcohol Test'],
+				['Drug and Alcohol', t.reasonDrugAndAlcohol || 'Drug and Alcohol'],
+				['DNA Test', t.reasonDNA || 'DNA Test'],
+				['Training', t.reasonTraining || 'Training'],
+				['Fieldprint', t.reasonFieldprint || 'Fieldprint'],
+				['IdentoGO', t.reasonIdentogo || 'IdentoGO'],
+				['Passport Photo', t.reasonPassportPhoto || 'Passport Photo']
+			].map(([value, label]) => `<option value="${value}"${!value ? ' selected' : ''}>${label}</option>`).join('');
+		}
+
+		const englishBtn = document.getElementById('englishBtn');
+		const spanishBtn = document.getElementById('spanishBtn');
+		const otherLangSelect = document.getElementById('otherLangSelect');
+		const assistedBtn = document.querySelector('.assisted-button');
+		const submitBtn = document.getElementById('submitBtn');
+		const clearBtn = document.getElementById('clearBtn');
+		const appointmentForm = document.getElementById('appointmentForm');
+		const successOverlay = document.getElementById('successOverlay');
+		const successTitle = document.getElementById('successTitle');
+		const successMessage = document.getElementById('successMessage');
+		let currentLang = 'en';
+		let successTimer = null;
+
+		async function loadLocale(lang) {
+			if (translationCache[lang]) return translationCache[lang];
+			const res = await fetch(LOCALES_DIR + lang + '.json');
+			if (!res.ok) throw new Error('Could not load language: ' + lang);
+			translationCache[lang] = await res.json();
+			return translationCache[lang];
+		}
+
+		function showSuccessPopup() {
+			const t = translationCache[currentLang] || {};
+			successTitle.textContent = t.successTitle || 'Thanks!';
+			successMessage.textContent = t.successMessage || 'Thanks! Please grab a seat in the waiting room. Someone will be with you shortly.';
+			successOverlay.classList.add('show');
+			successOverlay.setAttribute('aria-hidden', 'false');
+			clearTimeout(successTimer);
+			successTimer = setTimeout(hideSuccessPopup, 3000);
+		}
+
+		function hideSuccessPopup() {
+			successOverlay.classList.remove('show');
+			successOverlay.setAttribute('aria-hidden', 'true');
+		}
+
+		async function setLanguage(lang) {
+			try {
+				const t = await loadLocale(lang);
+				currentLang = lang;
+				localStorage.setItem('assistLang', lang);
+				document.documentElement.dir = t.dir || 'ltr';
+				assistedBtn.textContent = t.assistedSignIn;
+				document.querySelector('.lang-label').textContent = t.language || 'Language';
+				document.querySelector('[for="reasonForVisit"]').textContent = t.reasonForVisit || 'Reason for today\'s visit';
+				populateReasonOptions(t);
+				document.querySelector('[for="firstAndLastName"]').textContent = t.firstAndLastName || 'First and Last Name';
+				document.querySelector('[for="company"]').textContent = t.company || 'Company';
+				document.querySelector('[for="idState"]').textContent = t.idState || 'ID Issuing State';
+				document.querySelector('[for="idNumber"]').textContent = t.idNumber || 'Driver\'s License / ID Number';
+				document.querySelector('[for="dobDay"]').textContent = t.dob || 'Your Date of Birth';
+				document.getElementById('dobDayLabel').textContent = t.dobDayLabel || 'Day';
+				document.getElementById('dobMonthLabel').textContent = t.dobMonthLabel || 'Month';
+				document.getElementById('dobYearLabel').textContent = t.dobYearLabel || 'Year';
+				document.querySelector('[for="phone"]').textContent = t.phone || 'Your Phone Number';
+				document.querySelector('[for="email"]').textContent = t.email || 'Your Email Address';
+				submitBtn.textContent = t.submit;
+				clearBtn.textContent = t.clear;
+				const isOther = lang !== 'en' && lang !== 'es';
+				englishBtn.classList.toggle('active', lang === 'en');
+				spanishBtn.classList.toggle('active', lang === 'es');
+				otherLangSelect.classList.toggle('active', isOther);
+				if (!isOther) otherLangSelect.value = '';
+			} catch (err) {
+				console.error('Language load error:', err);
+			}
+		}
+
+		window.resetLanguageToEnglish = () => setLanguage('en');
+
+		englishBtn.addEventListener('click', () => setLanguage('en'));
+		spanishBtn.addEventListener('click', () => setLanguage('es'));
+		otherLangSelect.addEventListener('change', () => {
+			if (otherLangSelect.value) setLanguage(otherLangSelect.value);
+		});
+		document.getElementById('successCloseBtn').addEventListener('click', hideSuccessPopup);
+		successOverlay.addEventListener('click', (event) => { if (event.target === successOverlay) hideSuccessPopup(); });
+
+		assistedBtn.addEventListener('click', () => {
+			appointmentForm.reset();
+			window.open('assisted-signin.html', '_blank', 'width=420,height=760,scrollbars=yes,resizable=yes');
+		});
+
+		clearBtn.addEventListener('click', () => appointmentForm.reset());
+
+		appointmentForm.addEventListener('submit', async (e) => {
+			e.preventDefault();
+			const data = {
+				reasonForVisit: document.getElementById('reasonForVisit').value.trim(),
+				firstAndLastName: document.getElementById('firstAndLastName').value.trim(),
+				company: document.getElementById('company').value.trim(),
+				idState: document.getElementById('idState').value.trim(),
+				idNumber: document.getElementById('idNumber').value.trim(),
+				dob: document.getElementById('dobDay').value.padStart(2,'0') + '/' + document.getElementById('dobMonth').value.padStart(2,'0') + '/' + document.getElementById('dobYear').value,
+				phone: document.getElementById('phone').value.trim(),
+				email: document.getElementById('email').value.trim()
+			};
+
+			try {
+				const response = await fetch('save.php', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(data)
+				});
+				const result = await response.json();
+
+				if (!response.ok || !result.ok) {
+					throw new Error(result.error || 'Unable to save submission.');
+				}
+
+				showSuccessPopup();
+				appointmentForm.reset();
+			} catch (error) {
+				console.error(error);
+				alert((error.message || 'An error occurred while saving the form.') + '\n\nOpen this page through a local PHP server (run start-server.bat, then visit http://localhost:8080/).');
+			}
+		});
+
+		// DOB three-box auto-advance
+		(function() {
+			const day = document.getElementById('dobDay');
+			const mon = document.getElementById('dobMonth');
+			const yr  = document.getElementById('dobYear');
+			function digitsOnly(el) { el.value = el.value.replace(/\D/g, ''); }
+			day.addEventListener('input', function() { digitsOnly(day); if (day.value.length === 2) mon.focus(); });
+			mon.addEventListener('input', function() { digitsOnly(mon); if (mon.value.length === 2) yr.focus(); });
+			yr.addEventListener('input',  function() { digitsOnly(yr); });
+			mon.addEventListener('keydown', function(e) { if (e.key === 'Backspace' && mon.value === '') day.focus(); });
+			yr.addEventListener('keydown',  function(e) { if (e.key === 'Backspace' && yr.value  === '') mon.focus(); });
+		})();
+
+		populateReasonOptions();
+		setLanguage('en');
+	</script>
+</body>
+</html>
+

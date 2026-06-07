@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Assisted Sign in</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f7fb;
+      --panel: #ffffff;
+      --ink: #102028;
+      --muted: #3f4f5f;
+      --accent: #0b63d8;
+      --accent-2: #e8f1ff;
+      --border: #cbd5e1;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      padding: 18px;
+      line-height: 1.35;
+    }
+    .page {
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    .panel {
+      background: var(--panel);
+      border: 3px solid var(--accent);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 8px 24px rgba(16, 32, 40, 0.12);
+    }
+    .assist-tools {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .tool-btn {
+      flex:1 1 auto;
+      min-height:42px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:#fff;
+      color:var(--ink);
+      font-size:0.98rem;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .tool-btn:hover, .tool-btn:focus-visible {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(11,99,216,0.18);
+    }
+    .tool-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+      box-shadow: none;
+    }
+    .text-size-control {
+      display: flex;
+      align-items: stretch;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      overflow: hidden;
+      min-height: 42px;
+      flex: 1 1 auto;
+    }
+    .text-size-control:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(11,99,216,0.18);
+    }
+    .text-size-control .size-step-btn {
+      flex: 0 0 40px;
+      min-width: 40px;
+      border: none;
+      background: transparent;
+      color: var(--ink);
+      font-size: 1.25rem;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+    }
+    .text-size-control .size-step-btn:hover,
+    .text-size-control .size-step-btn:focus-visible {
+      background: var(--accent-2);
+      color: var(--accent);
+      outline: none;
+    }
+    .text-size-control .size-step-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.35;
+    }
+    #textSizeLabel {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--ink);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      padding: 0 4px;
+      text-align: center;
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+    }
+    h1 { font-size: 1.8rem; margin: 0 0 8px; }
+    p { font-size: 1.08rem; color: var(--muted); margin-top: 0; }
+    .step-pill {
+      display: inline-block;
+      background: var(--accent-2);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .card {
+      background: #f8fbff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    label { display: block; font-size: 1.08rem; font-weight: 700; margin-bottom: 6px; }
+    input, select {
+      width: 100%;
+      min-height: 52px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      font-size: 1.05rem;
+      background: #fff;
+    }
+    input:focus, select:focus, button:focus {
+      outline: 3px solid #0f172a;
+      outline-offset: 2px;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(11, 99, 216, 0.18);
+    }
+    .button-row { display: flex; gap: 10px; margin-top: 14px; }
+    button {
+      flex: 1;
+      min-height: 52px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-size: 1.05rem;
+      font-weight: 700;
+      padding: 10px 12px;
+    }
+    .secondary { background: #e7eefb; color: #102028; }
+    .primary { background: var(--accent); color: #fff; }
+    .helper { font-size: 0.95rem; color: var(--muted); margin-top: 8px; }
+    .hidden { display: none; }
+    .status { margin-top: 12px; font-size: 1.02rem; font-weight: 700; background:#f8fbff; border:1px solid var(--border); border-radius:10px; padding:10px; }
+    .status.success { color: #0a7d3a; }
+    .status.error { color: #b42318; }
+    .lang-row { display:flex; gap:8px; margin-bottom:10px; }
+    body.high-contrast {
+      background:#111827;
+      color:#fff;
+    }
+    body.high-contrast .panel,
+    body.high-contrast .card,
+    body.high-contrast .status,
+    body.high-contrast .success-modal {
+      background:#1f2937;
+      color:#fff;
+      border-color:#fbbf24;
+    }
+    body.high-contrast .tool-btn,
+    body.high-contrast .lang-btn,
+    body.high-contrast input,
+    body.high-contrast select,
+    body.high-contrast button {
+      background:#111827;
+      color:#fff;
+      border-color:#fbbf24;
+    }
+    :root { --text-scale: 1; }
+    html { font-size: calc(16px * var(--text-scale)); }
+    .lang-btn { flex:1; border-radius:10px; border:1px solid var(--border); background:#fff; color:#102028; min-height:44px; font-size:1rem; font-weight:700; cursor:pointer; font-family:inherit; }
+    .lang-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .lang-select { flex:1; border-radius:10px; border:1px solid var(--border); background:#fff; color:#102028; min-height:44px; font-size:1rem; font-weight:700; cursor:pointer; font-family:inherit; padding:0 10px; }
+    .lang-select.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+    .exit-btn { display:block; margin:14px auto 0; background:#e7eefb; color:#102028; border:1px solid #cbd5e1; border-radius:10px; padding:10px 40px; font-size:1rem; font-weight:700; cursor:pointer; min-height:48px; }
+    .exit-btn:hover { background:#d0ddf5; }
+    html.device-mobile .exit-btn { width:100%; padding:12px; font-size:1.05rem; min-height:52px; }
+    html.device-ipad9 .exit-btn { min-height:56px; font-size:1.1rem; padding:12px 60px; }
+    html.device-tablet .exit-btn { min-height:52px; font-size:1.05rem; }
+    .success-overlay { position:fixed; inset:0; background:rgba(15,23,42,0.45); display:none; align-items:center; justify-content:center; padding:18px; z-index:1000; }
+    .success-overlay.show { display:flex; }
+    .success-modal { width:min(92vw, 420px); background:#fff; border:3px solid var(--accent); border-radius:16px; box-shadow:0 18px 40px rgba(15,23,42,0.18); padding:18px; text-align:center; }
+    .success-modal h2 { margin:0 0 10px; font-size:1.25rem; color:var(--ink); }
+    .success-modal p { margin:0 0 14px; color:#1f2937; font-size:1.02rem; line-height:1.35; }
+    .success-modal button { background:var(--accent); color:#fff; border:none; border-radius:10px; padding:10px 14px; font-size:1rem; font-weight:700; min-height:44px; cursor:pointer; }
+    /* ── DOB three-part field ── */
+    .dob-row { display:flex; align-items:flex-start; gap:8px; margin-top:8px; }
+    .dob-part { display:flex; flex-direction:column; gap:3px; align-items:center; }
+    .dob-part-label { font-size:0.8rem; font-weight:600; color:var(--muted); }
+    .dob-row input { width:64px; min-height:52px; padding:12px 4px; margin:0; text-align:center; font-size:1.05rem; }
+    .dob-row input.dob-year { width:88px; }
+    .dob-sep { color:var(--muted); font-size:1.2rem; font-weight:700; padding-top:14px; }
+    html.device-ipad9 .dob-row input { min-height:60px; padding:15px 4px; }
+    html.device-ipad9 .dob-sep { padding-top:18px; }
+    html.device-tablet .dob-row input { min-height:56px; padding:14px 4px; }
+    html.device-tablet .dob-sep { padding-top:16px; }
+    /* ── Reason buttons ── */
+    .reason-buttons { display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; }
+    .reason-btn { flex:1 1 calc(50% - 5px); min-height:56px; border-radius:10px; border:2px solid var(--border); background:#fff; color:var(--ink); font-size:1rem; font-weight:600; cursor:pointer; padding:10px 12px; text-align:center; font-family:inherit; }
+    .reason-btn:hover, .reason-btn:focus-visible { border-color:var(--accent); background:var(--accent-2); outline:none; }
+    .reason-btn.selected { background:var(--accent); color:#fff; border-color:var(--accent); }
+    html.device-ipad9 .reason-btn { min-height:64px; font-size:1.08rem; border-radius:12px; }
+    html.device-tablet .reason-btn { min-height:60px; font-size:1.05rem; }
+    html.device-mobile .reason-btn { min-height:56px; font-size:1rem; }
+    @media (max-width: 420px) {
+      body { padding: 12px; }
+      .panel { padding: 14px; }
+      h1 { font-size: 1.45rem; }
+      button { min-height: 56px; font-size: 1.08rem; }
+    }
+
+    /* ── Mobile phones ── */
+    html.device-mobile body { padding: 10px; }
+    html.device-mobile .panel { padding: 14px; border-radius: 12px; }
+    html.device-mobile .page { max-width: 100%; }
+    html.device-mobile .card { padding: 12px; }
+    html.device-mobile label { font-size: 1.05rem; }
+    html.device-mobile input, html.device-mobile select { min-height: 56px; font-size: 1.05rem; padding: 13px 14px; }
+    /* Ensure assist-tools items wrap cleanly, never overlap */
+    html.device-mobile .assist-tools { gap: 6px; }
+    html.device-mobile .text-size-control { flex: 1 1 100%; min-height: 48px; }
+    html.device-mobile .tool-btn { flex: 1 1 auto; min-height: 48px; font-size: 1rem; }
+    /* Back / Next buttons: side-by-side with generous height */
+    html.device-mobile .button-row { gap: 8px; }
+    html.device-mobile .button-row button { flex: 1; min-height: 56px; font-size: 1.05rem; }
+    html.device-mobile .helper { font-size: 0.98rem; }
+
+    /* ── iPad 9th Generation (10.2 in · 810×1080 · 2× DPR) ── */
+    html.device-ipad9 body { padding: 32px; }
+    html.device-ipad9 .page { max-width: 680px; }
+    html.device-ipad9 .panel { padding: 28px; border-radius: 18px; }
+    html.device-ipad9 .card { padding: 18px; margin-bottom: 18px; border-radius: 14px; }
+    html.device-ipad9 label { font-size: 1.15rem; margin-bottom: 8px; }
+    html.device-ipad9 input, html.device-ipad9 select { min-height: 60px; font-size: 1.12rem; padding: 15px 18px; border-radius: 12px; }
+    html.device-ipad9 .tool-btn { min-height: 50px; font-size: 1rem; }
+    html.device-ipad9 .text-size-control { min-height: 50px; }
+    /* Back / Next buttons: side-by-side with generous height */
+    html.device-ipad9 .button-row { gap: 14px; }
+    html.device-ipad9 .button-row button { flex: 1; min-height: 60px; font-size: 1.12rem; border-radius: 12px; }
+    html.device-ipad9 .helper { font-size: 1.02rem; }
+    html.device-ipad9 .status { font-size: 1.05rem; padding: 12px; }
+
+    /* ── General tablet (other iPads · Android tablets) ── */
+    html.device-tablet body { padding: 26px; }
+    html.device-tablet .page { max-width: 620px; }
+    html.device-tablet .panel { padding: 24px; }
+    html.device-tablet .card { padding: 16px; }
+    html.device-tablet label { font-size: 1.1rem; }
+    html.device-tablet input, html.device-tablet select { min-height: 56px; font-size: 1.08rem; padding: 14px 16px; border-radius: 11px; }
+    html.device-tablet .tool-btn { min-height: 48px; }
+    html.device-tablet .text-size-control { min-height: 48px; }
+    /* Back / Next buttons: side-by-side */
+    html.device-tablet .button-row { gap: 12px; }
+    html.device-tablet .button-row button { flex: 1; min-height: 56px; font-size: 1.08rem; }
+    html.device-tablet .helper { font-size: 1rem; }
+  </style>
+</head>
+<body>
+<script>
+(function(){
+  var ua = navigator.userAgent;
+  var w = screen.width, h = screen.height;
+  var dpr = window.devicePixelRatio || 1;
+  var touch = navigator.maxTouchPoints || 0;
+  var isIPad   = /iPad/.test(ua) || (/Macintosh/.test(ua) && touch > 1);
+  var isPhone  = !isIPad && /Android|iPhone|iPod/.test(ua);
+  var isTablet = !isIPad && !isPhone && touch > 1 && Math.min(w,h) >= 600;
+  var lo = Math.min(w,h), hi = Math.max(w,h);
+  var isIPad9  = isIPad && lo === 810 && hi === 1080 && dpr === 2;
+  var cls = isIPad9  ? 'device-ipad9'
+          : isIPad   ? 'device-tablet'
+          : isPhone  ? 'device-mobile'
+          : isTablet ? 'device-tablet'
+          :             'device-desktop';
+  document.documentElement.classList.add(cls);
+})();
+</script>
+  <main class="page">
+    <div id="successOverlay" class="success-overlay" aria-hidden="true">
+      <div class="success-modal" role="dialog" aria-modal="true" aria-live="assertive">
+        <h2 id="successTitle">Thanks!</h2>
+        <p id="successMessage">Thanks! Please grab a seat in the waiting room. Someone will be with you shortly.</p>
+        <button type="button" id="successCloseBtn">Close</button>
+      </div>
+    </div>
+    <section class="panel">
+      <div class="assist-tools" aria-label="Accessibility helpers">
+        <div class="text-size-control" role="group" aria-label="Text size">
+          <button type="button" class="size-step-btn" id="zoomOutBtn" aria-label="Decrease text size">&#8722;</button>
+          <span id="textSizeLabel">Text Size 100%</span>
+          <button type="button" class="size-step-btn" id="zoomInBtn" aria-label="Increase text size">+</button>
+        </div>
+        <button type="button" class="tool-btn" id="contrastBtn">High Contrast</button>
+      </div>
+      <form id="assistedForm" novalidate>
+        <section class="card" data-step="1">
+          <label for="reasonBtnGroup">1. Reason for today's visit</label>
+          <input type="hidden" id="reasonForVisit" name="reasonForVisit" />
+          <div class="reason-buttons" id="reasonBtnGroup" role="group" aria-label="Reason for visit"></div>
+          <div class="helper">Choose the reason for your visit today.</div>
+        </section>
+
+        <section class="card hidden" data-step="2">
+          <label for="firstAndLastName">2. First and Last Name</label>
+          <input id="firstAndLastName" name="firstAndLastName" type="text" autocomplete="name" required />
+          <div class="helper">Enter the full first and last name exactly as it appears on your ID.</div>
+        </section>
+
+        <section class="card hidden" data-step="3">
+          <label for="company">3. Company</label>
+          <input id="company" name="company" type="text" />
+          <div class="helper">Enter your company name if applicable.</div>
+        </section>
+
+        <section class="card hidden" data-step="4">
+          <label for="idState">4. ID Issuing State</label>
+          <select id="idState" name="idState" required>
+            <option value="">Select state</option>
+            <option value="AL">Alabama</option>
+            <option value="AK">Alaska</option>
+            <option value="AZ">Arizona</option>
+            <option value="AR">Arkansas</option>
+            <option value="CA">California</option>
+            <option value="CO">Colorado</option>
+            <option value="CT">Connecticut</option>
+            <option value="DE">Delaware</option>
+            <option value="FL">Florida</option>
+            <option value="GA">Georgia</option>
+            <option value="HI">Hawaii</option>
+            <option value="ID">Idaho</option>
+            <option value="IL">Illinois</option>
+            <option value="IN">Indiana</option>
+            <option value="IA">Iowa</option>
+            <option value="KS">Kansas</option>
+            <option value="KY">Kentucky</option>
+            <option value="LA">Louisiana</option>
+            <option value="ME">Maine</option>
+            <option value="MD">Maryland</option>
+            <option value="MA">Massachusetts</option>
+            <option value="MI">Michigan</option>
+            <option value="MN">Minnesota</option>
+            <option value="MS">Mississippi</option>
+            <option value="MO">Missouri</option>
+            <option value="MT">Montana</option>
+            <option value="NE">Nebraska</option>
+            <option value="NV">Nevada</option>
+            <option value="NH">New Hampshire</option>
+            <option value="NJ">New Jersey</option>
+            <option value="NM">New Mexico</option>
+            <option value="NY">New York</option>
+            <option value="NC">North Carolina</option>
+            <option value="ND">North Dakota</option>
+            <option value="OH">Ohio</option>
+            <option value="OK">Oklahoma</option>
+            <option value="OR">Oregon</option>
+            <option value="PA">Pennsylvania</option>
+            <option value="RI">Rhode Island</option>
+            <option value="SC">South Carolina</option>
+            <option value="SD">South Dakota</option>
+            <option value="TN">Tennessee</option>
+            <option value="TX">Texas</option>
+            <option value="UT">Utah</option>
+            <option value="VT">Vermont</option>
+            <option value="VA">Virginia</option>
+            <option value="WA">Washington</option>
+            <option value="WV">West Virginia</option>
+            <option value="WI">Wisconsin</option>
+            <option value="WY">Wyoming</option>
+          </select>
+          <div class="helper">Select the state that issued your ID.</div>
+        </section>
+
+        <section class="card hidden" data-step="5">
+          <label for="idNumber">5. Driver's License / ID Number</label>
+          <input id="idNumber" name="idNumber" type="text" required />
+          <div class="helper">Enter your driver's license or ID number.</div>
+        </section>
+
+        <section class="card hidden" data-step="6">
+          <label for="dobDay">6. Your Date of Birth</label>
+          <div class="dob-row">
+            <div class="dob-part">
+              <input id="dobDay" name="dobDay" type="text" maxlength="2" placeholder="DD" inputmode="numeric" autocomplete="bday-day" required />
+              <span class="dob-part-label" id="dobDayLabel">Day</span>
+            </div>
+            <span class="dob-sep">/</span>
+            <div class="dob-part">
+              <input id="dobMonth" name="dobMonth" type="text" maxlength="2" placeholder="MM" inputmode="numeric" autocomplete="bday-month" required />
+              <span class="dob-part-label" id="dobMonthLabel">Month</span>
+            </div>
+            <span class="dob-sep">/</span>
+            <div class="dob-part">
+              <input id="dobYear" name="dobYear" type="text" class="dob-year" maxlength="4" minlength="4" placeholder="YYYY" inputmode="numeric" autocomplete="bday-year" required />
+              <span class="dob-part-label" id="dobYearLabel">Year</span>
+            </div>
+          </div>
+          <div class="helper">Enter day, month, and year in each field.</div>
+        </section>
+
+        <section class="card hidden" data-step="7">
+          <label for="phone">7. Your Phone Number</label>
+          <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required />
+          <div class="helper">Enter the best phone number to reach you.</div>
+        </section>
+
+        <section class="card hidden" data-step="8">
+          <label for="email">8. Your Email Address</label>
+          <input id="email" name="email" type="email" autocomplete="email" required />
+          <div class="helper">Enter your email address so we can contact you if needed.</div>
+        </section>
+
+        <div class="button-row">
+          <button type="button" class="secondary" id="backBtn">Back</button>
+          <button type="button" class="primary" id="nextBtn">Next</button>
+        </div>
+        <div class="status" id="statusMessage" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+  <button type="button" class="exit-btn" id="exitBtn" onclick="window.close()">Exit</button>
+
+  <script>
+    const LOCALES_DIR = 'locales/';
+    const translationCache = {};
+    const steps = Array.from(document.querySelectorAll('[data-step]'));
+    function populateReasonOptions(t = translationCache[currentLang] || {}) {
+      const group = document.getElementById('reasonBtnGroup');
+      const hidden = document.getElementById('reasonForVisit');
+      if (!group) return;
+      const reasons = [
+        ['Drug Test',        t.reasonDrugTest        || 'Drug Test'],
+        ['Alcohol Test',     t.reasonAlcoholTest     || 'Alcohol Test'],
+        ['Drug and Alcohol', t.reasonDrugAndAlcohol  || 'Drug and Alcohol'],
+        ['DNA Test',         t.reasonDNA             || 'DNA Test'],
+        ['Training',         t.reasonTraining        || 'Training'],
+        ['Fieldprint',       t.reasonFieldprint      || 'Fieldprint'],
+        ['IdentoGO',         t.reasonIdentogo        || 'IdentoGO'],
+        ['Passport Photo',   t.reasonPassportPhoto   || 'Passport Photo']
+      ];
+      const currentVal = hidden ? hidden.value : '';
+      group.innerHTML = reasons.map(([value, label]) =>
+        '<button type="button" class="reason-btn' + (currentVal === value ? ' selected' : '') +
+        '" data-value="' + value + '">' + label + '</button>'
+      ).join('');
+      group.querySelectorAll('.reason-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          group.querySelectorAll('.reason-btn').forEach(function(b) { b.classList.remove('selected'); });
+          btn.classList.add('selected');
+          hidden.value = btn.dataset.value;
+          statusMessage.textContent = '';
+          statusMessage.className = 'status';
+        });
+      });
+    }
+
+    const backBtn = document.getElementById('backBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const statusMessage = document.getElementById('statusMessage');
+    const form = document.getElementById('assistedForm');
+    const successOverlay = document.getElementById('successOverlay');
+    const successTitle = document.getElementById('successTitle');
+    const successMessage = document.getElementById('successMessage');
+    const textSizeLabel = document.getElementById('textSizeLabel');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const contrastBtn = document.getElementById('contrastBtn');
+    let currentStep = 1;
+    let currentLang = 'en';
+    const TEXT_SCALES = [1, 1.5, 2, 3];
+    let scaleIndex = 0;
+    let textSizeText = 'Text Size';
+    let successTimer = null;
+    let highContrastOn = false;
+
+    async function loadLocale(lang) {
+      if (translationCache[lang]) return translationCache[lang];
+      const res = await fetch(LOCALES_DIR + lang + '.json');
+      if (!res.ok) throw new Error('Could not load language: ' + lang);
+      translationCache[lang] = await res.json();
+      return translationCache[lang];
+    }
+
+    function applyTextScale() {
+      const scale = TEXT_SCALES[scaleIndex];
+      document.documentElement.style.setProperty('--text-scale', scale.toFixed(2));
+      textSizeLabel.textContent = textSizeText + ' ' + Math.round(scale * 100) + '%';
+      zoomOutBtn.disabled = scaleIndex === 0;
+      zoomInBtn.disabled = scaleIndex === TEXT_SCALES.length - 1;
+    }
+
+    function showSuccessPopup() {
+      const t = translationCache[currentLang] || {};
+      successTitle.textContent = t.successTitle || 'Thanks!';
+      successMessage.textContent = t.successMessage || 'Thanks! Please grab a seat in the waiting room. Someone will be with you shortly.';
+      document.getElementById('successCloseBtn').textContent = t.close || 'Close';
+      successOverlay.classList.add('show');
+      successOverlay.setAttribute('aria-hidden', 'false');
+      clearTimeout(successTimer);
+      successTimer = setTimeout(hideSuccessPopup, 3000);
+    }
+
+    function hideSuccessPopup() {
+      successOverlay.classList.remove('show');
+      successOverlay.setAttribute('aria-hidden', 'true');
+    }
+
+    async function setAssistLanguage(lang) {
+      try {
+        const t = await loadLocale(lang);
+        currentLang = lang;
+        localStorage.setItem('assistLang', lang);
+        document.documentElement.dir = t.dir || 'ltr';
+        document.title = t.title || 'Assisted Sign in';
+        document.querySelector('[for="reasonBtnGroup"]').textContent = t.reasonForVisit || '1. Reason for today\'s visit';
+        document.querySelector('[data-step="1"] .helper').textContent = t.reasonForVisitHint || 'Choose the reason for your visit today.';
+        populateReasonOptions(t);
+        document.querySelector('[for="firstAndLastName"]').textContent = t.firstAndLastName || '2. First and Last Name';
+        document.querySelector('[data-step="2"] .helper').textContent = t.firstAndLastNameHint || 'Enter the full first and last name exactly as it appears on your ID.';
+        document.querySelector('[for="company"]').textContent = t.company || '3. Company';
+        document.querySelector('[data-step="3"] .helper').textContent = t.companyHint || 'Enter your company name if applicable.';
+        document.querySelector('[for="idState"]').textContent = t.idState || '4. ID Issuing State';
+        document.querySelector('[data-step="4"] .helper').textContent = t.idStateHint || 'Select the state that issued your ID.';
+        document.querySelector('[for="idNumber"]').textContent = t.idNumber || '5. Driver\'s License / ID Number';
+        document.querySelector('[data-step="5"] .helper').textContent = t.idNumberHint || 'Enter your driver\'s license or ID number.';
+        document.querySelector('[for="dobDay"]').textContent = t.dob || '6. Your Date of Birth';
+        document.querySelector('[data-step="6"] .helper').textContent = t.dobHint || 'Enter day, month, and year in each field.';
+        document.getElementById('dobDayLabel').textContent = t.dobDayLabel || 'Day';
+        document.getElementById('dobMonthLabel').textContent = t.dobMonthLabel || 'Month';
+        document.getElementById('dobYearLabel').textContent = t.dobYearLabel || 'Year';
+        document.querySelector('[for="phone"]').textContent = t.phone || '7. Your Phone Number';
+        document.querySelector('[data-step="7"] .helper').textContent = t.phoneHint || 'Enter the best phone number to reach you.';
+        document.querySelector('[for="email"]').textContent = t.email || '8. Your Email Address';
+        document.querySelector('[data-step="8"] .helper').textContent = t.emailHint || 'Enter your email address so we can contact you if needed.';
+        backBtn.textContent = t.back;
+        nextBtn.textContent = currentStep === steps.length ? t.submit : t.next;
+        textSizeText = t.textSize || 'Text Size';
+        contrastBtn.textContent = highContrastOn ? t.contrastNormal : t.contrast;
+        applyTextScale();
+      } catch (err) {
+        console.error('Language load error:', err);
+      }
+    }
+
+    function showStep(step) {
+      currentStep = step;
+      const t = translationCache[currentLang] || {};
+      steps.forEach((card) => card.classList.toggle('hidden', Number(card.dataset.step) !== step));
+      backBtn.disabled = step === 1;
+      backBtn.style.opacity = step === 1 ? '0.65' : '1';
+      nextBtn.textContent = step === steps.length ? (t.submit || 'Submit') : (t.next || 'Next');
+      statusMessage.textContent = '';
+      statusMessage.className = 'status';
+      const card = document.querySelector('[data-step="' + step + '"]');
+      const firstInput = card && card.querySelector('input:not([type="hidden"]), select, .reason-btn');
+      if (firstInput) firstInput.focus();
+    }
+
+    function validateCurrentStep() {
+      const currentCard = document.querySelector('[data-step="' + currentStep + '"]');
+      if (currentStep === 1) {
+        if (!document.getElementById('reasonForVisit').value) {
+          statusMessage.textContent = 'Please select a reason for your visit.';
+          statusMessage.className = 'status error';
+          return false;
+        }
+        return true;
+      }
+      const inputs = currentCard.querySelectorAll('input:not([type="hidden"]), select');
+      for (const input of inputs) {
+        if (!input.checkValidity()) {
+          input.reportValidity();
+          return false;
+        }
+      }
+      return true;
+    }
+
+    zoomOutBtn.addEventListener('click', () => {
+      scaleIndex = Math.max(0, scaleIndex - 1);
+      applyTextScale();
+    });
+
+    zoomInBtn.addEventListener('click', () => {
+      scaleIndex = Math.min(TEXT_SCALES.length - 1, scaleIndex + 1);
+      applyTextScale();
+    });
+
+    contrastBtn.addEventListener('click', () => {
+      highContrastOn = !highContrastOn;
+      document.body.classList.toggle('high-contrast', highContrastOn);
+      const t = translationCache[currentLang] || {};
+      contrastBtn.textContent = highContrastOn ? (t.contrastNormal || 'Normal Contrast') : (t.contrast || 'High Contrast');
+    });
+
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'assistLang' && event.newValue) {
+        setAssistLanguage(event.newValue);
+      }
+    });
+
+    document.getElementById('successCloseBtn').addEventListener('click', hideSuccessPopup);
+    successOverlay.addEventListener('click', (event) => { if (event.target === successOverlay) hideSuccessPopup(); });
+
+    backBtn.addEventListener('click', () => {
+      if (currentStep > 1) showStep(currentStep - 1);
+    });
+
+    nextBtn.addEventListener('click', async () => {
+      if (!validateCurrentStep()) return;
+
+      if (currentStep < steps.length) {
+        showStep(currentStep + 1);
+        return;
+      }
+
+      const data = {
+        reasonForVisit: document.getElementById('reasonForVisit').value.trim(),
+        firstAndLastName: document.getElementById('firstAndLastName').value.trim(),
+        company: document.getElementById('company').value.trim(),
+        idState: document.getElementById('idState').value.trim(),
+        idNumber: document.getElementById('idNumber').value.trim(),
+        dob: document.getElementById('dobDay').value.padStart(2,'0') + '/' + document.getElementById('dobMonth').value.padStart(2,'0') + '/' + document.getElementById('dobYear').value,
+        phone: document.getElementById('phone').value.trim(),
+        email: document.getElementById('email').value.trim()
+      };
+
+      try {
+        const response = await fetch('save.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        const result = await response.json();
+
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || 'Unable to save the assisted sign-in entry.');
+        }
+
+        showSuccessPopup();
+        statusMessage.textContent = '';
+        statusMessage.className = 'status';
+        form.reset();
+        showStep(1);
+
+        localStorage.setItem('assistLang', 'en');
+
+        setTimeout(() => {
+          if (window.opener && !window.opener.closed) {
+            window.opener.resetLanguageToEnglish && window.opener.resetLanguageToEnglish();
+            window.opener.focus();
+          }
+          window.close();
+        }, 3000);
+      } catch (error) {
+        const detail = (error.message || 'An error occurred while saving.') + ' Open this page through a local PHP server (run start-server.bat, then visit http://localhost:8080/).';
+        statusMessage.textContent = detail;
+        statusMessage.className = 'status error';
+      }
+    });
+
+    // DOB three-box auto-advance
+    (function() {
+      const day = document.getElementById('dobDay');
+      const mon = document.getElementById('dobMonth');
+      const yr  = document.getElementById('dobYear');
+      function digitsOnly(el) { el.value = el.value.replace(/\D/g, ''); }
+      day.addEventListener('input', function() { digitsOnly(day); if (day.value.length === 2) mon.focus(); });
+      mon.addEventListener('input', function() { digitsOnly(mon); if (mon.value.length === 2) yr.focus(); });
+      yr.addEventListener('input',  function() { digitsOnly(yr); });
+      mon.addEventListener('keydown', function(e) { if (e.key === 'Backspace' && mon.value === '') day.focus(); });
+      yr.addEventListener('keydown',  function(e) { if (e.key === 'Backspace' && yr.value  === '') mon.focus(); });
+    })();
+
+    const initialLang = localStorage.getItem('assistLang') || 'en';
+    setAssistLanguage(initialLang);
+    showStep(1);
+  </script>
+</body>
+</html>
