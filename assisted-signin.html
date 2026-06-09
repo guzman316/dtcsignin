@@ -70,6 +70,7 @@
       overflow: hidden;
       min-height: 42px;
       flex: 1 1 auto;
+      font-size: 16px;
     }
     .text-size-control:focus-within {
       border-color: var(--accent);
@@ -81,7 +82,7 @@
       border: none;
       background: transparent;
       color: var(--ink);
-      font-size: 1.25rem;
+      font-size: 1.25em;
       font-weight: 700;
       cursor: pointer;
       padding: 0;
@@ -101,7 +102,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.88rem;
+      font-size: 0.88em;
       font-weight: 800;
       color: var(--ink);
       border-left: 1px solid var(--border);
@@ -187,7 +188,7 @@
       color:#fff;
       border-color:#fbbf24;
     }
-    :root { --text-scale: 1; }
+    :root { --text-scale: 1.5; }
     html { font-size: calc(16px * var(--text-scale)); }
     .lang-btn { flex:1; border-radius:10px; border:1px solid var(--border); background:#fff; color:#102028; min-height:44px; font-size:1rem; font-weight:700; cursor:pointer; font-family:inherit; }
     .lang-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
@@ -308,7 +309,7 @@
       <div class="assist-tools" aria-label="Accessibility helpers">
         <div class="text-size-control" role="group" aria-label="Text size">
           <button type="button" class="size-step-btn" id="zoomOutBtn" aria-label="Decrease text size">&#8722;</button>
-          <span id="textSizeLabel">Text Size 100%</span>
+          <span id="textSizeLabel">Text Size 150%</span>
           <button type="button" class="size-step-btn" id="zoomInBtn" aria-label="Increase text size">+</button>
         </div>
         <button type="button" class="tool-btn" id="contrastBtn">High Contrast</button>
@@ -487,7 +488,7 @@
     const contrastBtn = document.getElementById('contrastBtn');
     let currentStep = 1;
     let currentLang = 'en';
-    const TEXT_SCALES = [1, 1.5, 2, 3];
+    const TEXT_SCALES = [1.5, 2, 3];
     let scaleIndex = 0;
     let textSizeText = 'Text Size';
     let successTimer = null;

@@ -3,17 +3,16 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
-	<title>IdentoGo Appointment Form</title>
+	<title>Drug Test Compliance Daily Sign-in</title>
 	<style>
 		body { font-family: Arial, sans-serif; background:#f5f7fb; color:#102028; margin:0; padding:24px; }
 		.top-bar { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px; }
 		.top-logos { text-align:center; flex:1; margin-bottom:0; }
 		.top-logos img { display:block; margin:0 auto; height:auto; max-width:100%; }
-		.assisted-button { background:#2563eb; color:#fff; border:none; border-radius:10px; padding:12px 14px; font-size:1rem; font-weight:700; cursor:pointer; min-height:48px; box-shadow:0 6px 16px rgba(37,99,235,0.18); }
+		.assisted-button { background:#2563eb; color:#fff; border:none; border-radius:8px; padding:7px 14px; font-size:0.9rem; font-weight:700; cursor:pointer; min-height:38px; white-space:nowrap; }
 		.assisted-button:hover { background:#1d4ed8; }
 		#dtcLogo { width:clamp(220px, 72vw, 420px); max-width:100%; }
 		.brand-text { font-weight:700; margin:12px 0; font-size:1.05rem; }
-		.identogo-logo { width:clamp(84px, 30vw, 150px); max-width:100%; margin-top:8px; display:block; }
 		.container { width:calc(100% - 48px); max-width:520px; margin:18px auto; background:#fff; border-radius:10px; padding:20px; box-shadow:0 6px 18px rgba(8,24,48,0.08); box-sizing:border-box; border:3px solid #2563eb; position:relative; }
 		/* ── Language bar ── */
 		.lang-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
@@ -55,13 +54,11 @@
 		/* ── Mobile phones ── */
 		html.device-mobile body { padding:12px; }
 		html.device-mobile .top-bar { flex-direction:column; align-items:center; gap:8px; margin-bottom:12px; }
-		html.device-mobile .assisted-button { width:100%; text-align:center; }
 		html.device-mobile #dtcLogo { width:clamp(180px, 80vw, 320px); }
-		html.device-mobile .identogo-logo { width:clamp(64px, 22vw, 100px); }
 		html.device-mobile .container { width:calc(100% - 20px); padding:12px; }
 		html.device-mobile .lang-opt-btn { min-height:48px; font-size:1rem; }
 		html.device-mobile .lang-opt-select { min-height:auto; font-size:1rem; }
-		html.device-mobile .identogo-logo { display:block; }
+		html.device-mobile .assisted-button { min-height:48px; font-size:1rem; }
 		html.device-mobile label { font-size:1.05rem; }
 		html.device-mobile input, html.device-mobile select { min-height:52px; font-size:1.05rem; padding:12px 14px; }
 		/* Stack Clear + Submit vertically so they have full width */
@@ -73,13 +70,12 @@
 		html.device-ipad9 body { padding:36px; }
 		html.device-ipad9 #dtcLogo { width:clamp(280px, 54vw, 440px); }
 		html.device-ipad9 .brand-text { font-size:1.18rem; margin:14px 0; }
-		html.device-ipad9 .identogo-logo { width:clamp(92px, 20vw, 128px); margin-top:10px; }
 		html.device-ipad9 .container { max-width:700px; padding:30px; border-radius:12px; }
 		html.device-ipad9 label { font-size:1.12rem; margin-top:14px; }
 		html.device-ipad9 input, html.device-ipad9 select { min-height:56px; font-size:1.1rem; padding:14px 16px; border-radius:10px; }
 		html.device-ipad9 .lang-opt-select { min-height:auto; }
 		html.device-ipad9 .lang-opt-btn { min-height:50px; font-size:1.05rem; }
-		html.device-ipad9 .identogo-logo { display:block; }
+		html.device-ipad9 .assisted-button { min-height:50px; font-size:1.05rem; }
 		html.device-ipad9 .button-row { gap:14px; }
 		html.device-ipad9 .button-row button { min-height:56px; font-size:1.1rem; border-radius:10px; }
 		html.device-ipad9 .hint { font-size:1rem; }
@@ -93,14 +89,13 @@
 		html.device-tablet input, html.device-tablet select { min-height:54px; font-size:1.08rem; padding:13px 15px; border-radius:10px; }
 		html.device-tablet .lang-opt-select { min-height:auto; }
 		html.device-tablet .lang-opt-btn { min-height:48px; }
+		html.device-tablet .assisted-button { min-height:48px; }
 		html.device-tablet .button-row { gap:12px; }
 		html.device-tablet .button-row button { min-height:54px; font-size:1.08rem; border-radius:10px; }
-		html.device-tablet .identogo-logo { display:block; width:clamp(80px, 16vw, 120px); margin-top:10px; }
 
 		/* ── Desktop ── */
 		html.device-desktop .top-bar { display:block; text-align:center; position:relative; margin-bottom:18px; }
 		html.device-desktop .top-logos { display:inline-block; text-align:center; }
-		html.device-desktop .assisted-button { position:absolute; right:0; top:0; }
 		html.device-desktop .container { max-width:520px; }
 		html.device-desktop .lang-opt-select { min-height:auto; }
 
@@ -133,11 +128,9 @@
 </script>
 
 	<div class="top-bar">
-		<button type="button" class="assisted-button">Assisted Sign in</button>
 		<div class="top-logos">
 			<img id="dtcLogo" src="DTC Logo_with tag.png" srcset="DTC Logo_with tag@2x.png 2x" sizes="(max-width:600px) 80vw, 360px" alt="DTC Logo" />
 			<div class="brand-text">Drug Test Compliance Clinic Daily Sing-in</div>
-			<img src="identogo_logo.png" srcset="identogo_logo@2x.png 2x" sizes="(max-width:600px) 30vw, 100px" alt="IdentoGo Logo" class="identogo-logo" onerror="this.srcset='';this.onerror=null;" />
 		</div>
 	</div>
 
@@ -167,6 +160,7 @@
 				<option value="fr">Français</option>
 				<option value="pl">Polski</option>
 			</select>
+			<button type="button" class="assisted-button">Assisted Sign in</button>
 		</div>
 
 		<form id="appointmentForm">
